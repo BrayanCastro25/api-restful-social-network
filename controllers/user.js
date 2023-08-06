@@ -3,14 +3,16 @@ const bcrypt = require('bcrypt');
 
 // Importar esquema Mongo del usuario
 const User = require("../models/user");
-const user = require('../models/user');
-const { param } = require('../routes/user');
+
+// Importar services
+const jwt = require("../services/jwt");
 
 
 // Acciones de prueba
 const pruebaUser = (req, res) => {
     return res.status(200).send({
-        message: "mensaje enviado desde: controllers/user.js"
+        message: "mensaje enviado desde: controllers/user.js",
+        user: req.user
     });
 }
 
@@ -120,7 +122,7 @@ const login = (req, res) => {
             }
 
             // Conseguir Token
-            const token = false;
+            const token = jwt.createToken(user);
 
             // Devolver datos del usuario
             return res.status(200).json({
@@ -138,16 +140,39 @@ const login = (req, res) => {
         .catch((error) => {
             return res.status(404).json({
                 status: "error",
-                message: "Error a consultar usuario"
+                message: "Error a consultar usuario",
+                error
             });
         });
 
 }
 
 
+const profile = (req, res) => {
+    // Recibir el parametro de id de usuario por la url
+    const id = req.params.id;
+
+    // Consulta para sacar los datos del usuario
+    User.findById(id).select({password: 0, role:0})
+        .then((userProfile) => {
+            return res.status(200).json({
+                status: "success",
+                user: userProfile
+            });
+        })
+        .catch((error) => {
+            return res.status(404).json({
+                status: "error",
+                message: "El usuario no existe"
+            });
+        });
+
+}
+
 // Exportar acciones
 module.exports = {
     pruebaUser,
     register,
-    login
+    login,
+    profile
 }
