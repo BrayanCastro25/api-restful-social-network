@@ -1,5 +1,6 @@
 // Importar dependencias y módulos
 const bcrypt = require('bcrypt');
+const mongoosePaginate = require('mongoose-pagination');
 
 // Importar esquema Mongo del usuario
 const User = require("../models/user");
@@ -157,22 +158,73 @@ const profile = (req, res) => {
         .then((userProfile) => {
             return res.status(200).json({
                 status: "success",
+                message: "Datos del usuario encontrados correctamente",
                 user: userProfile
             });
         })
         .catch((error) => {
             return res.status(404).json({
                 status: "error",
-                message: "El usuario no existe"
+                message: "El usuario no existe",
+                error
             });
         });
 
 }
+
+
+const list = (req, res) => {
+
+    // Controlar en que página estamos
+    let page = 1;
+    
+    if(req.params.page){
+        page = req.params.page;
+    }
+
+    page = parseInt(page);
+
+    // Consulta con mongoose paginate
+    let itemsPerPage = 2;
+
+    User.find().sort('_id').paginate(page, itemsPerPage)
+        .then(async (users) => {
+            
+            // Get total users
+            const totalUsers = await User.countDocuments({}).exec();
+            if(!users){
+                return res.status(404).json({
+                    status: "error",
+                    message: "No users avaliable...",
+                    error: error
+                });
+            }
+
+            // Return response
+            return res.status(200).json({
+                status: 'success',
+                users,
+                page,
+                itemsPerPage,
+                total: totalUsers,
+                pages: Math.ceil(totalUsers/itemsPerPage)
+            });
+        })
+        .catch((error) => {
+            return res.status(500).json({
+                status: "Error",
+                error: error,
+                message: "Query error..."
+            });
+        });
+}
+
 
 // Exportar acciones
 module.exports = {
     pruebaUser,
     register,
     login,
-    profile
+    profile,
+    list
 }
