@@ -286,6 +286,17 @@ const update = (req, res) => {
 }
 
 
+const upload = (req, res) => {
+    return res.status(200).json({
+        status: "success",
+        message: "Método subida de archivos",
+        user: req.user,
+        file: req.file,
+        files: req.files
+    })
+}
+
+
 // Exportar acciones
 module.exports = {
     pruebaUser,
@@ -293,5 +304,6 @@ module.exports = {
     login,
     profile,
     list,
-    update
+    update,
+    upload
 }
