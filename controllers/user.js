@@ -220,11 +220,78 @@ const list = (req, res) => {
 }
 
 
+const update = (req, res) => {
+    // Recoger info del usuario a actualizar
+    let userIdentity = req.user;
+    let userToUpdate = req.body;
+
+    delete userToUpdate.iat;
+    delete userToUpdate.exp;
+    delete userToUpdate.role;
+    delete userToUpdate.image;
+
+    User.find({
+        $or: [
+            { email: userToUpdate.email.toLowerCase() },
+            { nick: userToUpdate.nick.toLowerCase() }
+        ]
+    })
+        .then((users) => {
+            let usserIssets = false;
+
+            users.forEach(user => {
+                if(user && user._id != userIdentity.id){
+                    usserIssets = true;
+                }
+            });
+
+            if (usserIssets) {
+                return res.status(200).send({
+                    status: "success",
+                    message: "El usuario ya existe"
+                });
+            }
+
+            // Cifrar la contraseña
+            if(userToUpdate.password){
+                bcrypt.hash(userToUpdate.password, 10, (error, pwd) => {
+                    userToUpdate.password = pwd;
+                })
+            }
+
+            // Buscar y actualizar
+            // El objeto de opciones new:true permite mostrar la información ya actualizada
+            User.findByIdAndUpdate(userIdentity.id, userToUpdate, {new:true})
+                .then((userUpdated) => {
+                    return res.status(200).send({
+                        status: "success",
+                        message: "Usuario actualizado",
+                        user: userUpdated
+                    });
+                })
+                .catch((error) => {
+                    return res.status(400).send({
+                        status: "error",
+                        message: "Error al actualizar el usuario"
+                    });
+                });
+
+        })
+        .catch((error) => {
+            return res.status(400).send({
+                status: "error",
+                message: "Error al consultar el usuario"
+            });
+        });
+}
+
+
 // Exportar acciones
 module.exports = {
     pruebaUser,
     register,
     login,
     profile,
-    list
+    list,
+    update
 }
