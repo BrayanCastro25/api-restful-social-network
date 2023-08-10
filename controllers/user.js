@@ -1,6 +1,7 @@
 // Importar dependencias y módulos
 const bcrypt = require('bcrypt');
 const mongoosePaginate = require('mongoose-pagination');
+const fs = require('fs');
 
 // Importar esquema Mongo del usuario
 const User = require("../models/user");
@@ -287,12 +288,47 @@ const update = (req, res) => {
 
 
 const upload = (req, res) => {
+
+    // Recoger el fichero de imagen
+    if(!req.file){
+        return res.status(404).json({
+            status: "error",
+            message: "La petición no incluye la imagen"
+        });
+    }
+
+
+    // Conseguir el nombre del archivo
+    let imageName = req.file.originalname;
+
+    // Extraer la extensión del archivo
+    let imageSplit = imageName.split('\.');
+    let extension = imageSplit[1];
+
+    // Comprobar extensión
+    if(extension != "png" && extension != "jpg" && extension != "jpeg" && extension != "gif"){
+
+        // Borrar archivo que no corresponda a las extensiones
+        const filePath = req.file.path;
+        const fileDelete = fs.unlinkSync(filePath);
+        
+        return res.status(400).json({
+            status: "error",
+            message: "Extensión del fichero invalida"
+        });
+    }
+
+    // Si no es correcta, borrar archivo
+
+    // Si es correcta, guardar en BBDD
+
     return res.status(200).json({
         status: "success",
         message: "Método subida de archivos",
         user: req.user,
         file: req.file,
-        files: req.files
+        files: req.files,
+        imageName
     })
 }
 
