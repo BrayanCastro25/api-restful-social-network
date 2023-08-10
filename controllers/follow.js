@@ -11,6 +11,11 @@ const pruebaFollow = (req, res) => {
     })
 }
 
+// Acción de seguir a alguiens
+const save = (req, res) => {
+
+}
+
 // Exportar acciones
 module.exports = {
     pruebaFollow

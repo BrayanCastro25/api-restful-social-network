@@ -1,12 +1,12 @@
-const {Schemma, model} = require('mongoose');
+const {Schema, model} = require('mongoose');
 
-const Follow = Schemma({
+const FollowSchema = Schema({
     user: {
-        type: Schemma.ObjectId,
+        type: Schema.ObjectId,
         ref: "User"
     },
     followed: {
-        type: Schemma.ObjectId,
+        type: Schema.ObjectId,
         ref: "User"
     },
     created_at: {
@@ -15,4 +15,4 @@ const Follow = Schemma({
     }
 });
 
-module.exports = model('Follow', FollowSchemma, 'follows');
+module.exports = model('Follow', FollowSchema, 'follows');
