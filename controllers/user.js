@@ -2,6 +2,7 @@
 const bcrypt = require('bcrypt');
 const mongoosePaginate = require('mongoose-pagination');
 const fs = require('fs');
+const path = require("path");
 
 // Importar esquema Mongo del usuario
 const User = require("../models/user");
@@ -339,6 +340,32 @@ const upload = (req, res) => {
 }
 
 
+const avatar = (req, res) => {
+    // Sacar el parámetro de la URL
+    const file = req.params.file;
+
+    // Montar el path real de la imagen
+    const filePath = "./uploads/avatars/" + file;
+
+    // Comprobar que existe
+    fs.stat(filePath, (error, exists) => {
+
+        if(!exists){
+            return res.status(404).json({
+                status: "error",
+                message: "No existe el archivo"
+            });
+        }
+
+        console.log(filePath);
+        console.log(path.resolve(filePath));
+        // Devolver un file con path.resolve() se obtiene la ruta absoluta del archivo
+        return res.sendFile(path.resolve(filePath));
+    });
+
+}
+
+
 // Exportar acciones
 module.exports = {
     pruebaUser,
@@ -347,5 +374,6 @@ module.exports = {
     profile,
     list,
     update,
-    upload
+    upload,
+    avatar
 }

@@ -1,3 +1,6 @@
+// Importar modelo
+const Follow = require("../models/follow");
+
 
 // Acciones de prueba
 
