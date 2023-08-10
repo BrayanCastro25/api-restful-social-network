@@ -318,18 +318,24 @@ const upload = (req, res) => {
         });
     }
 
-    // Si no es correcta, borrar archivo
-
     // Si es correcta, guardar en BBDD
+    User.findByIdAndUpdate(req.user.id, {image: req.file.filename}, {new: true})
+        .then((userUpdated) => {
+            return res.status(200).json({
+                status: "success",
+                message: "Archivo subido correctamente a la BBDD",
+                user: userUpdated,
+                file: req.file
+            });
+        })
+        .catch((error) => {
+            return res.status(400).json({
+                status: "error",
+                message: "Error al guardar la imagen en la BBDD"
+            });
+        });
 
-    return res.status(200).json({
-        status: "success",
-        message: "Método subida de archivos",
-        user: req.user,
-        file: req.file,
-        files: req.files,
-        imageName
-    })
+    
 }
 
 
