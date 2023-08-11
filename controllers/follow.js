@@ -49,6 +49,35 @@ const save = (req, res) => {
 }
 
 // Acción de dejar de seguir (unfollow)
+const unfollow = (req, res) => {
+
+    // Recoger el id del usuario identificado
+    const userId = req.user.id;
+
+    // Recoger el id del usuario que sigo y quiero dejar de seguir
+    const followedId = req.params.id;
+
+    // Find de las concidencias
+    Follow.find({
+        "user": userId,
+        "followed": followedId
+    }).deleteOne()
+        .then((followDeleted) => {
+            return res.status(200).json({
+                status: "success",
+                message: "Follow eliminado correctamente",
+                identity: req.user,
+                followDeleted
+            });
+        })
+        .catch((error) => {
+            return res.status(400).json({
+                status: "error",
+                message: "Error al realizar unfollow"
+            });
+        });
+
+};
 
 // Acción listado de usuarios que estoy siguiendo
 
@@ -57,5 +86,6 @@ const save = (req, res) => {
 // Exportar acciones
 module.exports = {
     pruebaFollow,
-    save
+    save,
+    unfollow
 }
