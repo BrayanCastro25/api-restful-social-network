@@ -13,10 +13,14 @@ const pruebaFollow = (req, res) => {
 
 // Acción de seguir a alguiens
 const save = (req, res) => {
-
+    return res.status(200).json({
+        status: "success",
+        message: "Método dar follow"
+    });
 }
 
 // Exportar acciones
 module.exports = {
-    pruebaFollow
+    pruebaFollow,
+    save
 }
