@@ -238,10 +238,11 @@ const update = (req, res) => {
             { nick: userToUpdate.nick.toLowerCase() }
         ]
     })
-        .then((users) => {
+        .then(async (users) => {
             let usserIssets = false;
 
             users.forEach(user => {
+                // El usuario identificado debe ser igual al usuario que se envia en el body
                 if(user && user._id != userIdentity.id){
                     usserIssets = true;
                 }
@@ -256,9 +257,9 @@ const update = (req, res) => {
 
             // Cifrar la contraseña
             if(userToUpdate.password){
-                bcrypt.hash(userToUpdate.password, 10, (error, pwd) => {
-                    userToUpdate.password = pwd;
-                })
+                pwd = await bcrypt.hash(userToUpdate.password, 10);
+                userToUpdate.password = pwd;
+                
             }
 
             // Buscar y actualizar

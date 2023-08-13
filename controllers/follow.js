@@ -2,6 +2,9 @@
 const Follow = require("../models/follow");
 const User = require("../models/user");
 
+// Importar dependencias
+const mongoosePagination = require('mongoose-pagination');
+
 
 // Acciones de prueba
 
@@ -79,13 +82,69 @@ const unfollow = (req, res) => {
 
 };
 
-// Acción listado de usuarios que estoy siguiendo
+// Acción listado de usuarios que cualquier usuario esta siguiendo (siguiendo)
+const following = (req, res) => {
+    // Sacar el id del usuario identificado
+    let userId = req.user.id;
 
-// Acción listado de usuarios que me siguen
+    // Comprobar si me llega el id por parametro en url
+    if(req.params.id){
+        userId = req.params.id;
+    }
+
+    // Comprobar si me llega la página (si no la pag 1)
+    let page = 1;
+
+    if(req.params.page){
+        page = req.params.page;
+    }
+
+    // Usuarios por página quiero mostrar
+    const itemPerPage = 5;
+
+    // Find a follow, popular datos de los usuarios y paginar
+    Follow.find({user: userId})
+    .populate("user followed", "-password -role -__v")
+    .paginate(page, itemPerPage)
+        .then(async (follows) => {
+            // Listado de usuarios en común con el usuario identificado
+
+            // Get total users
+            const totalUsers = await Follow.countDocuments({}).exec();
+
+            return res.status(200).json({
+                status: "success",
+                message: "Listado de usuarios que estoy siguiendo",
+                follows,
+                total: totalUsers,
+                pages: Math.ceil(totalUsers/itemPerPage)
+            });
+        })
+        .catch((error) => {
+            return res.status(404).json({
+                status: "error",
+                message: "Error al consultar el listado de seguidores",
+                follows,
+            });
+        });
+
+    
+};
+
+// Acción listado de usuarios que siguen a cualquier otro usuario (soy seguido)
+const followers = (req, res) => {
+    return res.status(200).json({
+        status: "success",
+        message: "Listado de usuarios que me siguen"
+    });
+}; 
+
 
 // Exportar acciones
 module.exports = {
     pruebaFollow,
     save,
-    unfollow
+    unfollow,
+    following,
+    followers
 }
