@@ -9,6 +9,7 @@ const User = require("../models/user");
 
 // Importar services
 const jwt = require("../services/jwt");
+const followService = require("../services/followService");
 
 
 // Acciones de prueba
@@ -157,11 +158,16 @@ const profile = (req, res) => {
 
     // Consulta para sacar los datos del usuario
     User.findById(id).select({password: 0, role:0})
-        .then((userProfile) => {
+        .then(async (userProfile) => {
+            // Info de seguimiento
+            const followInfo = await followService.followThisUser(req.user.id, id);
+
             return res.status(200).json({
                 status: "success",
                 message: "Datos del usuario encontrados correctamente",
-                user: userProfile
+                user: userProfile,
+                following: followInfo.following,
+                follower: followInfo.follower
             });
         })
         .catch((error) => {
@@ -202,6 +208,9 @@ const list = (req, res) => {
                 });
             }
 
+            // Sacar un array de los usuarios que me siguen y los que sigo
+            let followUserIds = await followService.followUserIds(req.user.id);
+
             // Return response
             return res.status(200).json({
                 status: 'success',
@@ -209,7 +218,9 @@ const list = (req, res) => {
                 page,
                 itemsPerPage,
                 total: totalUsers,
-                pages: Math.ceil(totalUsers/itemsPerPage)
+                pages: Math.ceil(totalUsers/itemsPerPage),
+                user_following: followUserIds.following,
+                user_follow_me: followUserIds.followers
             });
         })
         .catch((error) => {
