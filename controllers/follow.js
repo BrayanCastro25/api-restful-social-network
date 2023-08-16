@@ -110,8 +110,9 @@ const following = (req, res) => {
     .paginate(page, itemPerPage)
         .then(async (follows) => {
 
-            // Get total followers
-            const totalUsers = await Follow.countDocuments({}).exec();
+            // Get total followers (Para contar los documentos se debe poner la conidiconal followed: userId)
+            // que permite contar solo los documentos que cumplen con esa condición
+            const totalUsers = await Follow.countDocuments({user: userId}).exec();
 
             // Listado de usuarios en común con el usuario identificado
             let followUserIds = followService.followUserIds(req.user.id);
@@ -139,10 +140,55 @@ const following = (req, res) => {
 
 // Acción listado de usuarios que siguen a cualquier otro usuario (soy seguido)
 const followers = (req, res) => {
-    return res.status(200).json({
-        status: "success",
-        message: "Listado de usuarios que me siguen"
-    });
+    // Sacar el id del usuario identificado
+    let userId = req.user.id;
+
+    // Comprobar si me llega el id por parametro en url
+    if(req.params.id){
+        userId = req.params.id;
+    }
+
+    // Comprobar si me llega la página (si no la pag 1)
+    let page = 1;
+
+    if(req.params.page){
+        page = req.params.page;
+    }
+
+    // Usuarios por página quiero mostrar
+    const itemPerPage = 5;
+
+    // Find a follow, popular datos de los usuarios y paginar
+    Follow.find({followed: userId})
+    .populate("user followed", "-password -role -__v")
+    .paginate(page, itemPerPage)
+        .then(async (follows) => {
+
+            // Get total followers (Para contar los documentos se debe poner la conidiconal followed: userId)
+            // que permite contar solo los documentos que cumplen con esa condición
+            const totalUsers = await Follow.countDocuments({followed: userId}).exec();
+
+            // Listado de usuarios en común con el usuario identificado
+            let followUserIds = followService.followUserIds(req.user.id);
+
+            return res.status(200).json({
+                status: "success",
+                message: "Listado de usuarios que me siguen",
+                follows,
+                total: totalUsers,
+                pages: Math.ceil(totalUsers/itemPerPage),
+                user_following: (await followUserIds).following,
+                user_follow_me: (await followUserIds).followers
+            });
+        })
+        .catch((error) => {
+            return res.status(404).json({
+                status: "error",
+                message: "Error al consultar el listado de seguidores",
+                follows,
+            });
+        });
+
 }; 
 
 
