@@ -111,7 +111,8 @@ const following = (req, res) => {
         .then(async (follows) => {
 
             // Get total followers (Para contar los documentos se debe poner la conidiconal followed: userId)
-            // que permite contar solo los documentos que cumplen con esa condición
+            // que permite contar solo los documentos que cumplen con esa condición. esta condición solo se pudo
+            // hacer con el _id.
             const totalUsers = await Follow.countDocuments({user: userId}).exec();
 
             // Listado de usuarios en común con el usuario identificado
@@ -130,7 +131,7 @@ const following = (req, res) => {
         .catch((error) => {
             return res.status(404).json({
                 status: "error",
-                message: "Error al consultar el listado de seguidores",
+                message: "Error al consultar el listado de los usuarios que estoy siguiendo",
                 follows,
             });
         });
