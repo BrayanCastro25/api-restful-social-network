@@ -88,7 +88,7 @@ const remove = (req, res) => {
         .then((publicationDeleted) => {
             return res.status(200).json({
                 status: "success",
-                message: "Eliminar publicación",
+                message: "Publicación eliminada",
                 publicationDeleted
             });
         })
@@ -102,6 +102,44 @@ const remove = (req, res) => {
 }
 
 // Listar todas las publicaciones
+const user = (req, res) => {
+    // Sacar el id del usuario
+    let userId = req.params.id;
+
+    // Controlar la página
+    let page = 1;
+    if(req.params.page){
+        page = req.params.page;
+    }
+
+    const itemsPerPage = 3;
+
+    // Find, populate, ordenar, paginar
+    Publication.find({'user': userId})
+        .sort("-created_at")
+        .populate("user", "-password -__v -role")
+        .paginate(page, itemsPerPage)
+        .then(async (publicationsUser) => {
+            const totalPublications = await Publication.countDocuments({'user': userId}).exec();
+
+            return res.status(200).json({
+                status: "success",
+                message: "Publicaciones del usuario",
+                publications: publicationsUser,
+                page,
+                totalPublications,
+                pages: Math.ceil(totalPublications/itemsPerPage)
+            });
+
+        })
+        .catch((error) => {
+            return res.status(500).json({
+                status: "error",
+                message: "Error al consultar las publicaciones del usuario"
+            });
+        })
+
+};
 
 // Listar publicaciones de un usuario
 
@@ -115,5 +153,6 @@ module.exports = {
     pruebaPublication,
     save,
     detail,
-    remove
+    remove,
+    user
 }

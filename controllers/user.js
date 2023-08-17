@@ -199,7 +199,7 @@ const list = (req, res) => {
         .then(async (users) => {
             
             // Get total users
-            const totalUsers = await User.countDocuments({}).exec();
+            const totalUsers = await User.countDocuments({"role": "role_user"}).exec();
             if(!users){
                 return res.status(404).json({
                     status: "error",
