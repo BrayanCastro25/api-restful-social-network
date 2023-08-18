@@ -101,7 +101,8 @@ const remove = (req, res) => {
 
 }
 
-// Listar todas las publicaciones
+
+// Listar publicaciones de un usuario
 const user = (req, res) => {
     // Sacar el id del usuario
     let userId = req.params.id;
@@ -141,12 +142,64 @@ const user = (req, res) => {
 
 };
 
-// Listar publicaciones de un usuario
 
 // Subir ficheros
+const upload = (req, res) => {
+
+    // Extraer publicationID
+    const publicationId = req.params.id;
+
+    // Recoger el fichero de imagen
+    if(!req.file){
+        return res.status(404).json({
+            status: "error",
+            message: "La petición no incluye la imagen"
+        });
+    }
+
+    // Conseguir el nombre del archivo
+    let imageName = req.file.originalname;
+
+    // Extraer la extensión del archivo
+    let imageSplit = imageName.split('\.');
+    let extension = imageSplit[1];
+
+    // Comprobar extensión
+    if(extension != "png" && extension != "jpg" && extension != "jpeg" && extension != "gif"){
+
+        // Borrar archivo que no corresponda a las extensiones
+        const filePath = req.file.path;
+        const fileDelete = fs.unlinkSync(filePath);
+        
+        return res.status(400).json({
+            status: "error",
+            message: "Extensión del fichero invalida"
+        });
+    }
+
+    // Si es correcta, guardar en BBDD
+    Publication.findOneAndUpdate({"user": req.user.id, "_id": publicationId}, {file: req.file.filename}, {new: true})
+        .then((publicationUpdated) => {
+            return res.status(200).json({
+                status: "success",
+                message: "Archivo subido correctamente a la BBDD",
+                publication: publicationUpdated,
+                file: req.file
+            });
+        })
+        .catch((error) => {
+            return res.status(400).json({
+                status: "error",
+                message: "Error al guardar la imagen en la BBDD"
+            });
+        });
+
+    
+}
 
 // Devolver archivos multimedia
 
+// Listar todas las publicaciones (FEED)
 
 // Exportar acciones
 module.exports = {
@@ -154,5 +207,6 @@ module.exports = {
     save,
     detail,
     remove,
-    user
+    user,
+    upload
 }
