@@ -1,3 +1,7 @@
+// Importar modulos
+const fs = require('fs');
+const path = require('path');
+
 // Importar modelo
 const Publication = require('../models/publication');
 
@@ -198,6 +202,30 @@ const upload = (req, res) => {
 }
 
 // Devolver archivos multimedia
+const media = (req, res) => {
+    // Sacar el parámetro de la URL
+    const file = req.params.file;
+
+    // Montar el path real de la imagen
+    const filePath = "./uploads/publications/" + file;
+
+    // Comprobar que existe
+    fs.stat(filePath, (error, exists) => {
+
+        if(!exists){
+            return res.status(404).json({
+                status: "error",
+                message: "No existe el archivo"
+            });
+        }
+
+        console.log(filePath);
+        console.log(path.resolve(filePath));
+        // Devolver un file con path.resolve() se obtiene la ruta absoluta del archivo
+        return res.sendFile(path.resolve(filePath));
+    });
+
+}
 
 // Listar todas las publicaciones (FEED)
 
@@ -208,5 +236,6 @@ module.exports = {
     detail,
     remove,
     user,
-    upload
+    upload,
+    media
 }
