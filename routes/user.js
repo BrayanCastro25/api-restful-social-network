@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const UserController = require("../controllers/user");
-const auth = require("../middlewares/auth");
+const check = require("../middlewares/auth");
 
 // Configuraciones de subida
 const storage = multer.diskStorage({
@@ -19,14 +19,15 @@ const storage = multer.diskStorage({
 const uploads = multer({storage});
 
 // Definir rutas
-router.get("/prueba-user", auth.auth, UserController.pruebaUser);
+router.get("/prueba-user", check.auth, UserController.pruebaUser);
 router.post("/register", UserController.register);
 router.post("/login", UserController.login);
-router.get("/profile/:id", auth.auth, UserController.profile);
-router.get("/list/:page?", auth.auth, UserController.list);
-router.put('/update', auth.auth, UserController.update);
-router.post('/upload', [auth.auth, uploads.single("file0")], UserController.upload);
-router.get('/avatar/:file', auth.auth, UserController.avatar);
+router.get("/profile/:id", check.auth, UserController.profile);
+router.get("/list/:page?", check.auth, UserController.list);
+router.put('/update', check.auth, UserController.update);
+router.post('/upload', [check.auth, uploads.single("file0")], UserController.upload);
+router.get('/avatar/:file', UserController.avatar);
+router.get('/counters/:id', check.auth, UserController.counters);
 
 // Exportar router
 module.exports = router;

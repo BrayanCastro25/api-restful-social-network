@@ -6,10 +6,13 @@ const path = require("path");
 
 // Importar esquema Mongo del usuario
 const User = require("../models/user");
+const Follow = require("../models/follow");
+const Publication = require("../models/publication");
 
 // Importar services
 const jwt = require("../services/jwt");
 const followService = require("../services/followService");
+const follow = require('../models/follow');
 
 
 // Acciones de prueba
@@ -195,7 +198,7 @@ const list = (req, res) => {
     // Consulta con mongoose paginate
     let itemsPerPage = 2;
 
-    User.find().sort('_id').paginate(page, itemsPerPage)
+    User.find().select('-email -password -role -__v').sort('_id').paginate(page, itemsPerPage)
         .then(async (users) => {
             
             // Get total users
@@ -271,6 +274,8 @@ const update = (req, res) => {
                 pwd = await bcrypt.hash(userToUpdate.password, 10);
                 userToUpdate.password = pwd;
                 
+            } else {
+                delete userToUpdate.password;
             }
 
             // Buscar y actualizar
@@ -378,6 +383,37 @@ const avatar = (req, res) => {
 }
 
 
+const counters = async (req, res) => {
+    let userId = req.user.id;
+
+    if(req.params.id){
+        userId = req.params.id;
+    }
+
+    try{
+        const following = await Follow.count({ "user": userId });
+
+        const followed = await Follow.count({ "followed": userId });
+        
+        const publications = await Publication.count({ "user": userId });
+
+        return res.status(200).json({
+            status: "success",
+            userId,
+            following: following,
+            followed: followed,
+            publications: publications
+        });
+
+    } catch (error){
+        return res.status(500).json({
+            status: "error",
+            message: "Error en los contadores",
+        });
+    }
+};
+
+
 // Exportar acciones
 module.exports = {
     pruebaUser,
@@ -387,5 +423,6 @@ module.exports = {
     list,
     update,
     upload,
-    avatar
+    avatar,
+    counters
 }

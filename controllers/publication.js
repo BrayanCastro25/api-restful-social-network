@@ -124,7 +124,7 @@ const user = (req, res) => {
     // Find, populate, ordenar, paginar
     Publication.find({'user': userId})
         .sort("-created_at")
-        .populate("user", "-password -__v -role")
+        .populate("user", "-password -__v -role -email")
         .paginate(page, itemsPerPage)
         .then(async (publicationsUser) => {
             const totalPublications = await Publication.countDocuments({'user': userId}).exec();
@@ -260,6 +260,7 @@ const feed = async (req, res) => {
             myFollowing: myFollows.following,
             publications: publicationsFollowing,
             page,
+            itemsPerPage,
             pages: Math.ceil(totalPublications / itemsPerPage),
             totalPublications
         });

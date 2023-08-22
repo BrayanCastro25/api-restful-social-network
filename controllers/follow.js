@@ -106,7 +106,7 @@ const following = (req, res) => {
 
     // Find a follow, popular datos de los usuarios y paginar
     Follow.find({user: userId})
-    .populate("user followed", "-password -role -__v")
+    .populate("user followed", "-password -role -__v -email")
     .paginate(page, itemPerPage)
         .then(async (follows) => {
 
@@ -161,7 +161,7 @@ const followers = (req, res) => {
 
     // Find a follow, popular datos de los usuarios y paginar
     Follow.find({followed: userId})
-    .populate("user followed", "-password -role -__v")
+    .populate("user followed", "-password -role -__v -email")
     .paginate(page, itemPerPage)
         .then(async (follows) => {
 
