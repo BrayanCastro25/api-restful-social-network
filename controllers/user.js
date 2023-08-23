@@ -12,7 +12,7 @@ const Publication = require("../models/publication");
 // Importar services
 const jwt = require("../services/jwt");
 const followService = require("../services/followService");
-const follow = require('../models/follow');
+const validate = require("../helpers/validate");
 
 
 // Acciones de prueba
@@ -34,6 +34,16 @@ const register = (req, res) => {
         return res.status(400).json({
             status: "error",
             message: "Faltan datos por enviar"
+        });
+    }
+
+    // Validación avanzada
+    try{
+        validate.validate(params);
+    }catch(error){
+        return res.status(400).json({
+            status: "error",
+            message: "Validación no superada"
         });
     }
 
